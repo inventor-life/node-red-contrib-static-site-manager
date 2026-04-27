@@ -63,21 +63,17 @@ Import in Node-RED through Menu -> Import.
 
 ## Screenshots
 
-Screenshot assets location:
+### Node-RED Editor Home
 
-- `docs/screenshots/`
+![Node-RED Editor Home](docs/screenshots/01-nodered-editor-home.png)
 
-Note: In this environment, browser screenshot automation is blocked by missing system dependency (`libasound2`) and no `sudo` access to install it.
+### Static Site Manager Panel
 
-To generate screenshots locally on your machine:
+![Static Site Manager Panel](docs/screenshots/02-static-site-manager-panel.png)
 
-```bash
-# From your workstation (with browser dependencies installed)
-cd /home/andres/noderedplugin/static-site-manager
-mkdir -p docs/screenshots
-npx playwright screenshot http://127.0.0.1:1881 docs/screenshots/01-nodered-home.png
-npx playwright screenshot http://127.0.0.1:1881/static-site-manager docs/screenshots/02-static-site-manager-panel.png
-```
+### Node-RED Workspace
+
+![Node-RED Workspace](docs/screenshots/03-nodered-editor-workspace.png)
 
 ## Local development
 
@@ -89,9 +85,7 @@ cd ~/.node-red
 npm install /home/andres/noderedplugin/static-site-manager/inventor-life-node-red-contrib-static-site-manager-1.0.0.tgz
 ```
 
-If your Node-RED userDir is different, install the tarball there. In this workspace it was installed successfully at:
-
-- `/home/andres/mqttlibrary/workspace-nodered-dev/nodered`
+If your Node-RED userDir is different, install the tarball there.
 
 ## Publishing
 
