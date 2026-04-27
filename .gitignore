@@ -2,3 +2,5 @@ node_modules/
 *.tgz
 npm-debug.log*
 .DS_Store
+
+AGENT_CONTEXT.md
