@@ -1,0 +1,82 @@
+<script type="text/javascript">
+  (function() {
+    function resolveManagerHref() {
+      const rawRoot = (RED.settings && RED.settings.httpAdminRoot) || "/";
+      const cleanRoot = String(rawRoot).replace(/\/+$/, "");
+      const prefix = cleanRoot && cleanRoot !== "/" ? cleanRoot : "";
+      return prefix + "/static-site-manager";
+    }
+
+    function addManagerButton() {
+      if (document.getElementById("red-ui-header-button-static-site-manager")) return;
+
+      const menuButton =
+        document.getElementById("red-ui-header-button-sidemenu") ||
+        document.querySelector("#red-ui-header .fa-bars")?.parentElement ||
+        document.getElementById("red-ui-header-button-deploy");
+
+      if (!menuButton || !menuButton.parentElement) {
+        setTimeout(addManagerButton, 500);
+        return;
+      }
+
+      const btn = document.createElement("a");
+      btn.id = "red-ui-header-button-static-site-manager";
+      btn.className = "button";
+      btn.href = resolveManagerHref();
+      btn.target = "_blank";
+      btn.title = "Open Static Site Manager";
+      btn.style.marginRight = "5px";
+      btn.innerHTML = '<i class="fa fa-globe"></i>';
+
+      menuButton.parentElement.insertBefore(btn, menuButton);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", addManagerButton);
+    } else {
+      setTimeout(addManagerButton, 100);
+    }
+  })();
+
+  RED.nodes.registerType("static-site-manager", {
+    category: "function",
+    color: "#C7E9C0",
+    defaults: {
+      name: { value: "" },
+      sitePath: { value: "", required: true },
+      route: { value: "/static", required: true }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "static-site-manager.svg",
+    label: function() {
+      return this.name || "static-site-manager";
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="static-site-manager">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Static Site Manager" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-sitePath"><i class="fa fa-folder-open"></i> Site Path</label>
+    <input type="text" id="node-input-sitePath" placeholder="/path/to/dist or build" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-route"><i class="fa fa-link"></i> Route</label>
+    <input type="text" id="node-input-route" placeholder="/static" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="static-site-manager">
+  <p><strong>Static Site Manager</strong> administra y sirve sitios estaticos generados con Angular, React, Vue o HTML plano.</p>
+  <p>Configura la ruta local del build en <code>sitePath</code> y la ruta de publicacion en <code>route</code>. El nodo tambien expone una interfaz de administracion para despliegues y webhooks.</p>
+  <p>Entradas y salidas:</p>
+  <ul>
+    <li>Entrada: recibe un <code>msg</code> de control o disparo.</li>
+    <li>Salida: reenvia el <code>msg</code> agregando metadatos en <code>msg.staticSiteManager</code>.</li>
+  </ul>
+</script>

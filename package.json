@@ -1,0 +1,46 @@
+{
+  "name": "@inventor-life/node-red-contrib-static-site-manager",
+  "version": "1.0.0",
+  "description": "Node-RED node for managing and serving static sites from Angular, React, Vue or HTML builds",
+  "main": "nodes/static-site-manager.js",
+  "keywords": [
+    "node-red",
+    "node-red-contrib",
+    "node-red-node",
+    "static-site",
+    "static-site-manager",
+    "angular",
+    "react",
+    "vue",
+    "html",
+    "dashboard"
+  ],
+  "node-red": {
+    "nodes": {
+      "static-site-manager": "nodes/static-site-manager.js"
+    }
+  },
+  "files": [
+    "nodes",
+    "examples",
+    "icons",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"No tests configured yet\"",
+    "pack:local": "npm pack",
+    "publish:public": "npm publish --access public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "node-red": ">=3.0.0"
+  },
+  "dependencies": {
+    "unzipper": "^0.12.3"
+  },
+  "author": "Inventor Life",
+  "license": "MIT"
+}

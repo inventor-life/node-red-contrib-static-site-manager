@@ -1,0 +1,1487 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Static Site Manager</title>
+  <style>
+    :root {
+      --bg: #f3f6fa;
+      --panel: #ffffff;
+      --text: #202938;
+      --muted: #5f6b7a;
+      --line: #d3dde8;
+      --brand: #c23b22;
+      --brand-soft: #fef2ef;
+      --ok: #166534;
+      --danger: #b91c1c;
+      --shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #eef4fb, #f7f9fc 45%, #edf3fa);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 12px auto;
+      padding: 0 12px;
+    }
+
+    .top {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .top-endpoint-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .top-endpoint-link a {
+      color: #0f4c81;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(15, 76, 129, 0.25);
+    }
+
+    .top-endpoint-link a:hover {
+      color: #0b355b;
+      border-bottom-color: rgba(11, 53, 91, 0.45);
+    }
+
+    .lang-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .top-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #c9d3df;
+      border-radius: 8px;
+      background: #fff;
+      color: #344155;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      border-color: #9fafc3;
+      color: #1f2937;
+    }
+
+    .lang-box select {
+      width: auto;
+      min-width: 130px;
+      padding: 6px 8px;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 8px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+
+    .row {
+      margin-bottom: 8px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="file"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #c9d3df;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    button {
+      border: 1px solid #c9d3df;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: #9fafc3;
+    }
+
+    button.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    button.warn {
+      background: #fff1f2;
+      color: var(--danger);
+      border-color: #fecdd3;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      min-height: 18px;
+    }
+
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--ok); }
+
+    .endpoint-list {
+      display: grid;
+      gap: 8px;
+      max-height: calc(100vh - 260px);
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .endpoint-item {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+
+    .endpoint-item:hover {
+      border-color: #9bb0c8;
+    }
+
+    .endpoint-item.active {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+      box-shadow: inset 0 0 0 1px rgba(194, 59, 34, 0.2);
+    }
+
+    .endpoint-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .pill.manual { background: #eff6ff; border-color: #bfdbfe; }
+    .pill.github { background: #eef2ff; border-color: #c7d2fe; }
+    .pill.gitea { background: #fff7ed; border-color: #fed7aa; }
+    .pill.disabled { background: #f3f4f6; border-color: #d1d5db; color: #4b5563; }
+
+    .workspace-header {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: linear-gradient(180deg, #ffffff, #fbfdff);
+      margin-bottom: 10px;
+    }
+
+    .active-endpoint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      border: 2px solid #e78977;
+      background: linear-gradient(180deg, #fff1ed, #ffe5df);
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: #7f1d1d;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(194, 59, 34, 0.12);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 10px;
+      padding-bottom: 0;
+    }
+
+    .tab-btn {
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: #49566a;
+    }
+
+    .tab-btn.active {
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+      font-weight: 600;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .log {
+      border-bottom: 1px dashed #dbe2ec;
+      padding: 8px 0;
+    }
+
+    .spacer { height: 8px; }
+
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+      .endpoint-list { max-height: none; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="top-row">
+        <h1 id="titleMain">Static Site Manager</h1>
+        <div class="top-actions">
+          <a id="backToEditorLink" class="back-link" href="/" title="Volver a Node-RED" aria-label="Volver a Node-RED">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10 7L5 12L10 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M6 12H15C17.7614 12 20 9.76142 20 7V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <div class="lang-box">
+            <label for="languageSelect" id="languageLabel">Idioma / Language</label>
+            <select id="languageSelect">
+              <option value="es">Espanol</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="top-meta">
+        <div class="muted" id="statusLine">Cargando...</div>
+        <div class="top-endpoint-link" id="activeEndpointTopLine" style="display:none;">
+          <span class="muted" id="activeEndpointUrlLabel">Abrir endpoint:</span>
+          <a id="activeEndpointTopLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="panel">
+        <h3 id="endpointsTitle">Endpoints</h3>
+        <div class="muted" id="endpointsSubtitle">Selecciona donde vas a trabajar. El endpoint activo queda resaltado.</div>
+
+        <div class="spacer"></div>
+        <div class="toolbar">
+          <input id="newAppName" type="text" placeholder="nuevo app (ej: miapp)" style="max-width: 200px;" />
+          <button class="primary" id="createAppBtn">Crear</button>
+          <button id="refreshAppsBtn">Actualizar</button>
+        </div>
+
+        <div class="status" id="appsStatus"></div>
+        <div class="spacer"></div>
+        <div id="endpointsList" class="endpoint-list"></div>
+      </aside>
+
+      <main class="panel">
+        <div class="workspace-header">
+          <div class="active-endpoint" id="activeEndpointBadge">Sin endpoint seleccionado</div>
+          <div id="selectedAppLine" class="muted">Selecciona un endpoint para ver todas sus opciones.</div>
+          <div class="spacer"></div>
+          <div class="toolbar">
+            <button id="refreshSelectedBtn">Recargar endpoint</button>
+            <button class="warn" id="deleteSelectedBtn">Eliminar endpoint</button>
+          </div>
+        </div>
+
+        <div class="tabs" id="workspaceTabs">
+          <button class="tab-btn active" data-tab="summary">Resumen</button>
+          <button class="tab-btn" data-tab="config">Configuracion</button>
+          <button class="tab-btn" data-tab="releases">Releases</button>
+          <button class="tab-btn" data-tab="manual">Deploy manual</button>
+          <button class="tab-btn" data-tab="webhook">Webhook</button>
+          <button class="tab-btn" data-tab="logs">Logs</button>
+        </div>
+
+        <section class="section active" id="section-summary">
+          <div class="grid-2">
+            <div>
+              <label>App</label>
+              <div class="mono" id="summaryApp">-</div>
+            </div>
+            <div>
+              <label>Route publica</label>
+              <div class="mono" id="summaryRoute">-</div>
+            </div>
+            <div>
+              <label>Modo</label>
+              <div id="summaryMode">-</div>
+            </div>
+            <div>
+              <label>Release activa</label>
+              <div class="mono" id="summaryRelease">-</div>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+          <div class="toolbar">
+            <button id="checkUpdateBtn">Check update</button>
+            <button class="primary" id="deployLatestBtn">Deploy latest</button>
+            <button id="refreshReleasesBtn">Refresh releases</button>
+            <button id="refreshLogsBtn">Refresh logs</button>
+          </div>
+          <div class="status" id="summaryStatus"></div>
+        </section>
+
+        <section class="section" id="section-config">
+          <h3>Configuracion del Endpoint</h3>
+          <div class="grid-2">
+            <div>
+              <div class="row">
+                <label>App</label>
+                <input id="cfgApp" type="text" readonly />
+              </div>
+              <div class="row">
+                <label>Route</label>
+                <input id="cfgRoute" type="text" placeholder="/miapp" />
+              </div>
+              <div class="row">
+                <label><input id="cfgEnabled" type="checkbox" /> <span id="cfgEnabledText">Endpoint habilitado</span></label>
+              </div>
+              <div class="row">
+                <label>Modo</label>
+                <select id="cfgMode">
+                  <option value="manual">manual</option>
+                  <option value="github">github</option>
+                  <option value="gitea">gitea</option>
+                </select>
+              </div>
+              <div class="row">
+                <label>Source Type</label>
+                <select id="cfgSourceType">
+                  <option value="release_asset">release_asset</option>
+                </select>
+              </div>
+              <div class="row">
+                <label>Owner / Org</label>
+                <input id="cfgOwner" type="text" placeholder="owner" />
+              </div>
+              <div class="row">
+                <label>Repo</label>
+                <input id="cfgRepo" type="text" placeholder="repo" />
+              </div>
+              <div class="row">
+                <label>Artifact Name (opcional)</label>
+                <input id="cfgArtifactName" type="text" placeholder="dist.zip" />
+              </div>
+              <div class="row">
+                <label>Base URL (Gitea API, opcional)</label>
+                <input id="cfgBaseUrl" type="text" placeholder="https://gitea.miempresa.com/api/v1" />
+              </div>
+            </div>
+
+            <div>
+              <div class="row">
+                <label>Auth Type</label>
+                <select id="cfgAuthType">
+                  <option value="bearer">bearer</option>
+                  <option value="token">token</option>
+                  <option value="header">header custom</option>
+                </select>
+              </div>
+              <div class="row">
+                <label>Auth Header Name (si authType=header)</label>
+                <input id="cfgAuthHeaderName" type="text" placeholder="Authorization" />
+              </div>
+              <div class="row">
+                <label>Token (se guarda backend)</label>
+                <input id="cfgToken" type="password" placeholder="dejar vacio para mantener" />
+              </div>
+              <div class="row">
+                <label>Webhook Secret (se guarda backend)</label>
+                <input id="cfgWebhookSecret" type="password" placeholder="dejar vacio para mantener" />
+              </div>
+              <div class="row">
+                <label>Max ZIP bytes</label>
+                <input id="cfgMaxZip" type="number" min="1048576" step="1" />
+              </div>
+              <div class="row">
+                <label>Max archivos</label>
+                <input id="cfgMaxFiles" type="number" min="100" step="1" />
+              </div>
+              <div class="row">
+                <label>Allowed branches (csv o *)</label>
+                <input id="cfgAllowedBranches" type="text" placeholder="main,release/*" />
+              </div>
+              <div class="row">
+                <label>Allowed tags (csv o *)</label>
+                <input id="cfgAllowedTags" type="text" placeholder="v*,latest" />
+              </div>
+              <div class="row">
+                <label><input id="cfgWebhookEnabled" type="checkbox" /> Webhook enabled</label>
+                <label><input id="cfgWebhookAutoDeploy" type="checkbox" /> Auto deploy por webhook</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <button class="primary" id="saveConfigBtn">Guardar configuracion</button>
+            <button id="testConnectionBtn">Probar conexion</button>
+          </div>
+          <div class="status" id="configStatus"></div>
+        </section>
+
+        <section class="section" id="section-releases">
+          <h3>Releases e Historial</h3>
+          <div class="grid-2" style="margin-top: 8px;">
+            <div>
+              <label>Remote versions disponibles</label>
+              <select id="remoteVersionSelect"></select>
+              <div class="spacer"></div>
+              <button id="deployVersionBtn">Deploy selected version</button>
+            </div>
+            <div>
+              <label>Rollback a version local</label>
+              <select id="rollbackVersionSelect"></select>
+              <div class="spacer"></div>
+              <button class="warn" id="rollbackBtn">Rollback</button>
+            </div>
+          </div>
+
+          <div class="status" id="releaseStatus"></div>
+          <div class="spacer"></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Provider</th>
+                <th>Source Version</th>
+                <th>Tag/Branch</th>
+                <th>Deploy</th>
+              </tr>
+            </thead>
+            <tbody id="releaseRows"></tbody>
+          </table>
+        </section>
+
+        <section class="section" id="section-manual">
+          <h3>Deploy Manual (compatibilidad)</h3>
+          <div class="grid-2">
+            <div class="row">
+              <label for="manualApp">App</label>
+              <input id="manualApp" type="text" placeholder="miapp" />
+            </div>
+            <div class="row">
+              <label for="manualRoute">Route publica</label>
+              <input id="manualRoute" type="text" placeholder="/miapp" />
+            </div>
+          </div>
+          <div class="row">
+            <label for="manualFiles">Carpeta/archivos dist</label>
+            <input id="manualFiles" type="file" webkitdirectory directory multiple />
+          </div>
+          <button class="primary" id="manualDeployBtn">Upload + Deploy</button>
+          <div class="status" id="manualStatus"></div>
+        </section>
+
+        <section class="section" id="section-webhook">
+          <h3>Webhook Integracion</h3>
+          <div class="muted">Configura provider + webhookSecret y apunta tu webhook al endpoint:</div>
+          <div class="mono" id="webhookUrlLine">-</div>
+          <div class="spacer"></div>
+          <div class="muted">GitHub headers: <span class="mono">x-github-event, x-github-delivery, x-hub-signature-256</span></div>
+          <div class="muted">Gitea headers: <span class="mono">x-gitea-event, x-gitea-delivery, x-gitea-signature</span></div>
+          <div class="spacer"></div>
+          <div class="muted">El webhook valida firma, evita duplicados por delivery id, aplica whitelist de branch/tag y solo luego ejecuta deploy (si autoDeploy esta activo).</div>
+        </section>
+
+        <section class="section" id="section-logs">
+          <h3>Ultimos Eventos</h3>
+          <div id="logsContainer"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const i18n = {
+      es: {
+        pageTitle: "Static Site Manager",
+        languageLabel: "Idioma / Language",
+        backToEditor: "Volver a Node-RED",
+        endpointsTitle: "Endpoints",
+        endpointsSubtitle: "Selecciona donde vas a trabajar. El endpoint activo queda resaltado.",
+        refresh: "Actualizar",
+        create: "Crear",
+        reloadEndpoint: "Recargar endpoint",
+        deleteEndpoint: "Eliminar endpoint",
+        tabSummary: "Resumen",
+        tabConfig: "Configuracion",
+        tabReleases: "Releases",
+        tabManual: "Deploy manual",
+        tabWebhook: "Webhook",
+        tabLogs: "Logs",
+        panelEnabledLabel: "Panel habilitado",
+        savePanelAvailability: "Guardar disponibilidad",
+        panelAvailabilityHint: "Si deshabilitas el panel, la UI y API administrativa no estaran disponibles.",
+        panelAvailabilityControlledByConfig: "Controlado por config node de Node-RED. Cambia 'Panel Enabled' en Configuration nodes.",
+        panelAvailabilityControlledByPanel: "Controlado desde este dashboard.",
+        panelAvailabilitySaved: "Disponibilidad del panel guardada",
+        noEndpointSelected: "Sin endpoint seleccionado",
+        selectEndpointHint: "Selecciona un endpoint para ver todas sus opciones.",
+        summaryApp: "App",
+        summaryRoute: "Route publica",
+        summaryMode: "Modo",
+        summaryRelease: "Release activa",
+        endpointEnabled: "Endpoint habilitado",
+        endpointDisabledPill: "disabled",
+        checkUpdate: "Check update",
+        deployLatest: "Deploy latest",
+        refreshReleases: "Actualizar releases",
+        refreshLogs: "Actualizar logs",
+        configTitle: "Configuracion del Endpoint",
+        saveConfig: "Guardar configuracion",
+        testConnection: "Probar conexion",
+        releasesTitle: "Releases e Historial",
+        remoteVersions: "Remote versions disponibles",
+        deploySelectedVersion: "Deploy selected version",
+        rollbackLocalVersion: "Rollback a version local",
+        rollback: "Rollback",
+        manualTitle: "Deploy Manual (compatibilidad)",
+        uploadDeploy: "Upload + Deploy",
+        webhookTitle: "Webhook Integracion",
+        webhookDesc: "Configura provider + webhookSecret y apunta tu webhook al endpoint:",
+        webhookNote: "El webhook valida firma, evita duplicados por delivery id, aplica whitelist de branch/tag y solo luego ejecuta deploy (si autoDeploy esta activo).",
+        logsTitle: "Ultimos Eventos",
+        noOptions: "(sin opciones)",
+        noEndpoints: "No hay endpoints creados",
+        noReleases: "Sin releases",
+        noLogs: "Sin logs",
+        noRoute: "(sin route)",
+        appPrefix: "app",
+        activeEndpointPrefix: "Endpoint activo: {route}",
+        activeEndpointUrlLabel: "Abrir endpoint:",
+        selectedLine: "App: {app} | Release activa: {release}",
+        workingOn: "Trabajando en: {route} ({app})",
+        storageLine: "storage: {storage} | endpoints: {count}",
+        defineAppName: "Define nombre de app",
+        endpointCreated: "Endpoint creado para app: {app}",
+        noEndpointSelectedError: "No hay endpoint seleccionado",
+        deleteConfirm: "Eliminar app {app}?",
+        endpointDeleted: "Endpoint eliminado: {app}",
+        selectApp: "Selecciona una app",
+        configSaved: "Configuracion guardada",
+        connectionOk: "Conexion OK: {repo}",
+        selectRemoteVersion: "Selecciona una version remota",
+        selectRollbackVersion: "Selecciona version de rollback",
+        rollbackConfirm: "Aplicar rollback a {version}?",
+        latestSummary: "latest={latest} | needsUpdate={needsUpdate}",
+        deployLatestOk: "Deploy latest OK: {version}",
+        deployVersionOk: "Deploy version OK: {version}",
+        rollbackOk: "Rollback OK. Active release: {version}",
+        prepareUpload: "Preparando upload...",
+        uploading: "Subiendo {current}/{total}: {file}",
+        manualDeployOk: "Deploy manual OK: {version}",
+        endpointsUpdated: "Endpoints actualizados",
+        endpointReloaded: "Endpoint recargado",
+        releasesUpdated: "Releases actualizados",
+        logsUpdated: "Logs actualizados",
+        initialError: "Error inicial: {error}",
+        defineApp: "Define app",
+        defineRoute: "Define route",
+        selectDistFiles: "Selecciona archivos dist",
+        yes: "si",
+        no: "no"
+      },
+      en: {
+        pageTitle: "Static Site Manager",
+        languageLabel: "Language",
+        backToEditor: "Back to Node-RED",
+        endpointsTitle: "Endpoints",
+        endpointsSubtitle: "Select where to work. The active endpoint stays highlighted.",
+        refresh: "Refresh",
+        create: "Create",
+        reloadEndpoint: "Reload endpoint",
+        deleteEndpoint: "Delete endpoint",
+        tabSummary: "Summary",
+        tabConfig: "Configuration",
+        tabReleases: "Releases",
+        tabManual: "Manual deploy",
+        tabWebhook: "Webhook",
+        tabLogs: "Logs",
+        panelEnabledLabel: "Panel enabled",
+        savePanelAvailability: "Save availability",
+        panelAvailabilityHint: "If you disable the panel, admin UI and API will not be available.",
+        panelAvailabilityControlledByConfig: "Controlled by Node-RED config node. Change 'Panel Enabled' in Configuration nodes.",
+        panelAvailabilityControlledByPanel: "Controlled from this dashboard.",
+        panelAvailabilitySaved: "Panel availability saved",
+        noEndpointSelected: "No endpoint selected",
+        selectEndpointHint: "Select an endpoint to see all its options.",
+        summaryApp: "App",
+        summaryRoute: "Public route",
+        summaryMode: "Mode",
+        summaryRelease: "Active release",
+        endpointEnabled: "Endpoint enabled",
+        endpointDisabledPill: "disabled",
+        checkUpdate: "Check update",
+        deployLatest: "Deploy latest",
+        refreshReleases: "Refresh releases",
+        refreshLogs: "Refresh logs",
+        configTitle: "Endpoint Configuration",
+        saveConfig: "Save configuration",
+        testConnection: "Test connection",
+        releasesTitle: "Releases and History",
+        remoteVersions: "Available remote versions",
+        deploySelectedVersion: "Deploy selected version",
+        rollbackLocalVersion: "Rollback to local version",
+        rollback: "Rollback",
+        manualTitle: "Manual Deploy (compatibility)",
+        uploadDeploy: "Upload + Deploy",
+        webhookTitle: "Webhook Integration",
+        webhookDesc: "Set provider + webhookSecret and point your webhook to this endpoint:",
+        webhookNote: "Webhook verifies signature, avoids duplicate delivery IDs, applies branch/tag whitelist, and only then deploys (if autoDeploy is enabled).",
+        logsTitle: "Latest Events",
+        noOptions: "(no options)",
+        noEndpoints: "No endpoints created",
+        noReleases: "No releases",
+        noLogs: "No logs",
+        noRoute: "(no route)",
+        appPrefix: "app",
+        activeEndpointPrefix: "Active endpoint: {route}",
+        activeEndpointUrlLabel: "Open endpoint:",
+        selectedLine: "App: {app} | Active release: {release}",
+        workingOn: "Working on: {route} ({app})",
+        storageLine: "storage: {storage} | endpoints: {count}",
+        defineAppName: "Define app name",
+        endpointCreated: "Endpoint created for app: {app}",
+        noEndpointSelectedError: "No endpoint selected",
+        deleteConfirm: "Delete app {app}?",
+        endpointDeleted: "Endpoint deleted: {app}",
+        selectApp: "Select an app",
+        configSaved: "Configuration saved",
+        connectionOk: "Connection OK: {repo}",
+        selectRemoteVersion: "Select a remote version",
+        selectRollbackVersion: "Select a rollback version",
+        rollbackConfirm: "Apply rollback to {version}?",
+        latestSummary: "latest={latest} | needsUpdate={needsUpdate}",
+        deployLatestOk: "Deploy latest OK: {version}",
+        deployVersionOk: "Deploy version OK: {version}",
+        rollbackOk: "Rollback OK. Active release: {version}",
+        prepareUpload: "Preparing upload...",
+        uploading: "Uploading {current}/{total}: {file}",
+        manualDeployOk: "Manual deploy OK: {version}",
+        endpointsUpdated: "Endpoints refreshed",
+        endpointReloaded: "Endpoint reloaded",
+        releasesUpdated: "Releases refreshed",
+        logsUpdated: "Logs refreshed",
+        initialError: "Initial error: {error}",
+        defineApp: "Define app",
+        defineRoute: "Define route",
+        selectDistFiles: "Select dist files",
+        yes: "yes",
+        no: "no"
+      }
+    };
+
+    const state = {
+      apps: [],
+      selectedApp: "",
+      appDetails: null,
+      remoteVersions: [],
+      currentTab: "summary",
+      language: "es",
+      panelEnabled: true,
+      panelControlledByConfigNode: false
+    };
+
+    function t(key, vars = {}) {
+      const dict = i18n[state.language] || i18n.es;
+      const fallback = i18n.es[key] || key;
+      const template = dict[key] || fallback;
+      return String(template).replace(/\{(\w+)\}/g, (_, name) => (Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : ""));
+    }
+
+    function setText(id, key) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = t(key);
+    }
+
+    function applyI18n() {
+      document.documentElement.lang = state.language;
+      document.title = t("pageTitle");
+      setText("titleMain", "pageTitle");
+      setText("languageLabel", "languageLabel");
+      const backLink = document.getElementById("backToEditorLink");
+      if (backLink) {
+        const backText = t("backToEditor");
+        backLink.title = backText;
+        backLink.setAttribute("aria-label", backText);
+      }
+      setText("endpointsTitle", "endpointsTitle");
+      setText("endpointsSubtitle", "endpointsSubtitle");
+      setText("activeEndpointUrlLabel", "activeEndpointUrlLabel");
+      setText("createAppBtn", "create");
+      setText("refreshAppsBtn", "refresh");
+      setText("refreshSelectedBtn", "reloadEndpoint");
+      setText("deleteSelectedBtn", "deleteEndpoint");
+      setText("checkUpdateBtn", "checkUpdate");
+      setText("deployLatestBtn", "deployLatest");
+      setText("refreshReleasesBtn", "refreshReleases");
+      setText("refreshLogsBtn", "refreshLogs");
+      setText("saveConfigBtn", "saveConfig");
+      setText("testConnectionBtn", "testConnection");
+      setText("deployVersionBtn", "deploySelectedVersion");
+      setText("rollbackBtn", "rollback");
+      setText("manualDeployBtn", "uploadDeploy");
+      setText("cfgEnabledText", "endpointEnabled");
+
+      document.querySelector('#workspaceTabs .tab-btn[data-tab="summary"]').textContent = t("tabSummary");
+      document.querySelector('#workspaceTabs .tab-btn[data-tab="config"]').textContent = t("tabConfig");
+      document.querySelector('#workspaceTabs .tab-btn[data-tab="releases"]').textContent = t("tabReleases");
+      document.querySelector('#workspaceTabs .tab-btn[data-tab="manual"]').textContent = t("tabManual");
+      document.querySelector('#workspaceTabs .tab-btn[data-tab="webhook"]').textContent = t("tabWebhook");
+      document.querySelector('#workspaceTabs .tab-btn[data-tab="logs"]').textContent = t("tabLogs");
+
+      document.querySelector("#section-summary .grid-2 > div:nth-child(1) label").textContent = t("summaryApp");
+      document.querySelector("#section-summary .grid-2 > div:nth-child(2) label").textContent = t("summaryRoute");
+      document.querySelector("#section-summary .grid-2 > div:nth-child(3) label").textContent = t("summaryMode");
+      document.querySelector("#section-summary .grid-2 > div:nth-child(4) label").textContent = t("summaryRelease");
+
+      document.querySelector("#section-config h3").textContent = t("configTitle");
+      document.querySelector("#section-releases h3").textContent = t("releasesTitle");
+      document.querySelector("#section-releases .grid-2 > div:nth-child(1) label").textContent = t("remoteVersions");
+      document.querySelector("#section-releases .grid-2 > div:nth-child(2) label").textContent = t("rollbackLocalVersion");
+      document.querySelector("#section-manual h3").textContent = t("manualTitle");
+      document.querySelector('label[for="manualApp"]').textContent = t("summaryApp");
+      document.querySelector('label[for="manualRoute"]').textContent = t("summaryRoute");
+      document.querySelector('label[for="manualFiles"]').textContent = state.language === "en" ? "Dist folder/files" : "Carpeta/archivos dist";
+      document.querySelector("#section-webhook h3").textContent = t("webhookTitle");
+      const webhookMuted = document.querySelectorAll("#section-webhook .muted");
+      if (webhookMuted[0]) webhookMuted[0].textContent = t("webhookDesc");
+      if (webhookMuted[3]) webhookMuted[3].textContent = t("webhookNote");
+      document.querySelector("#section-logs h3").textContent = t("logsTitle");
+
+      document.getElementById("newAppName").placeholder = state.language === "en" ? "new app (eg: myapp)" : "nuevo app (ej: miapp)";
+    }
+
+    function endpointAbsoluteUrl(route) {
+      const rawRoute = String(route || "").trim();
+      if (!rawRoute || rawRoute === "/") return "";
+      const normalized = rawRoute.startsWith("/") ? rawRoute : `/${rawRoute}`;
+      return `${window.location.origin}${normalized}`;
+    }
+
+    function updateActiveEndpointTopLink(route) {
+      const wrap = document.getElementById("activeEndpointTopLine");
+      const link = document.getElementById("activeEndpointTopLink");
+      if (!wrap || !link) return;
+      const absolute = endpointAbsoluteUrl(route);
+      if (!absolute) {
+        wrap.style.display = "none";
+        link.removeAttribute("href");
+        link.textContent = "";
+        return;
+      }
+      wrap.style.display = "inline-flex";
+      link.href = absolute;
+      link.textContent = absolute;
+      link.title = absolute;
+    }
+
+    async function fetchJson(url, options) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = {}; }
+      if (!res.ok || !data.ok) {
+        throw new Error((data && data.error) || `HTTP ${res.status}`);
+      }
+      return data;
+    }
+
+    function readBrowserLanguage() {
+      try {
+        const raw = localStorage.getItem("staticSiteManager.language");
+        return raw === "en" ? "en" : raw === "es" ? "es" : "";
+      } catch (err) {
+        return "";
+      }
+    }
+
+    function saveBrowserLanguage(language) {
+      try {
+        localStorage.setItem("staticSiteManager.language", language === "en" ? "en" : "es");
+      } catch (err) {
+        // Ignore storage errors (private mode, disabled storage, etc).
+      }
+    }
+
+    async function loadUiSettings() {
+      const browserLanguage = readBrowserLanguage();
+      if (browserLanguage) {
+        state.language = browserLanguage;
+      }
+
+      try {
+        const data = await fetchJson("/static-site-manager/api/ui-settings");
+        const language = data && data.settings && data.settings.language === "en" ? "en" : "es";
+        const panelEnabled = data && Object.prototype.hasOwnProperty.call(data, "effectivePanelEnabled")
+          ? data.effectivePanelEnabled !== false
+          : !data || !data.settings || data.settings.panelEnabled !== false;
+        state.panelControlledByConfigNode = !!(data && data.controlledByConfigNode);
+        state.panelEnabled = panelEnabled;
+        if (!browserLanguage) {
+          state.language = language;
+          saveBrowserLanguage(language);
+        }
+      } catch (err) {
+        if (!browserLanguage) {
+          state.language = "es";
+          saveBrowserLanguage("es");
+        }
+      }
+      document.getElementById("languageSelect").value = state.language;
+      const toggle = document.getElementById("panelEnabledToggle");
+      const saveBtn = document.getElementById("savePanelAvailabilityBtn");
+      if (toggle) {
+        toggle.checked = state.panelEnabled;
+        toggle.disabled = state.panelControlledByConfigNode;
+      }
+      if (saveBtn) {
+        saveBtn.disabled = state.panelControlledByConfigNode;
+      }
+      applyI18n();
+    }
+
+    function resolveEditorBasePath() {
+      const fullPath = String(location.pathname || "");
+      const match = fullPath.match(/^(.*)\/static-site-manager(?:\/.*)?$/);
+      if (!match) return "/";
+      const base = match[1] || "";
+      return base || "/";
+    }
+
+    async function saveUiSettings() {
+      await fetchJson("/static-site-manager/api/ui-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language: state.language, panelEnabled: state.panelEnabled })
+      });
+    }
+
+    function setStatus(id, message, isError = false) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = message || "";
+      el.className = `status ${message ? (isError ? "error" : "ok") : ""}`;
+    }
+
+    function modePill(mode) {
+      const m = (mode || "manual").toLowerCase();
+      return `<span class="pill ${m}">${m}</span>`;
+    }
+
+    function csvFromList(list) {
+      return Array.isArray(list) ? list.join(", ") : "";
+    }
+
+    function listFromCsv(value) {
+      return String(value || "").split(",").map((x) => x.trim()).filter(Boolean);
+    }
+
+    function fillSelect(el, items, mapLabel, mapValue) {
+      el.innerHTML = "";
+      if (!items.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = t("noOptions");
+        el.appendChild(opt);
+        return;
+      }
+      for (const item of items) {
+        const opt = document.createElement("option");
+        opt.value = mapValue(item);
+        opt.textContent = mapLabel(item);
+        el.appendChild(opt);
+      }
+    }
+
+    function switchSection(tabName) {
+      state.currentTab = tabName;
+      for (const btn of document.querySelectorAll("#workspaceTabs .tab-btn")) {
+        btn.classList.toggle("active", btn.dataset.tab === tabName);
+      }
+      for (const section of document.querySelectorAll(".section")) {
+        section.classList.toggle("active", section.id === `section-${tabName}`);
+      }
+    }
+
+    function renderEndpointList() {
+      const list = document.getElementById("endpointsList");
+      list.innerHTML = "";
+
+      if (!state.apps.length) {
+        list.innerHTML = `<div class="muted">${t("noEndpoints")}</div>`;
+        return;
+      }
+
+      for (const app of state.apps) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = `endpoint-item ${state.selectedApp === app.app ? "active" : ""}`;
+        item.innerHTML = `
+          <div class="endpoint-title">${app.route || t("noRoute")}</div>
+          <div class="mono">${t("appPrefix")}: ${app.app}</div>
+          <div style="margin-top:6px;">${modePill(app.mode)} ${app.enabled === false ? `<span class="pill disabled">${t("endpointDisabledPill")}</span>` : ""}</div>
+        `;
+        item.addEventListener("click", async () => {
+          if (state.selectedApp === app.app) return;
+          state.selectedApp = app.app;
+          renderEndpointList();
+          await loadSelectedApp();
+          setStatus("appsStatus", t("workingOn", { route: app.route || t("noRoute"), app: app.app }));
+        });
+        list.appendChild(item);
+      }
+    }
+
+    async function loadApps() {
+      const [appsData, statusData] = await Promise.all([
+        fetchJson("/static-site-manager/api/apps"),
+        fetchJson("/static-site-manager/api/status")
+      ]);
+
+      state.apps = appsData.items || [];
+      document.getElementById("statusLine").textContent = t("storageLine", { storage: statusData.storageRoot, count: state.apps.length });
+
+      if (state.selectedApp && !state.apps.some((x) => x.app === state.selectedApp)) {
+        state.selectedApp = "";
+      }
+      if (!state.selectedApp && state.apps.length) {
+        state.selectedApp = state.apps[0].app;
+      }
+
+      renderEndpointList();
+
+      if (state.selectedApp) {
+        await loadSelectedApp();
+      } else {
+        state.appDetails = null;
+        renderSelectedApp();
+      }
+    }
+
+    async function loadSelectedApp() {
+      if (!state.selectedApp) return;
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}`);
+      state.appDetails = data;
+      renderSelectedApp();
+      await Promise.all([loadReleases(), loadLogs()]);
+      renderEndpointList();
+    }
+
+    function renderSelectedApp() {
+      const badge = document.getElementById("activeEndpointBadge");
+      const line = document.getElementById("selectedAppLine");
+
+      if (!state.appDetails || !state.appDetails.config) {
+        badge.textContent = t("noEndpointSelected");
+        line.textContent = t("selectEndpointHint");
+        updateActiveEndpointTopLink("");
+        document.getElementById("summaryApp").textContent = "-";
+        document.getElementById("summaryRoute").textContent = "-";
+        document.getElementById("summaryMode").textContent = "-";
+        document.getElementById("summaryRelease").textContent = "-";
+        return;
+      }
+
+      const cfg = state.appDetails.config;
+      const route = cfg.route || t("noRoute");
+      badge.textContent = t("activeEndpointPrefix", { route });
+      line.textContent = t("selectedLine", { app: cfg.app, release: cfg.activeRelease || "-" });
+      updateActiveEndpointTopLink(cfg.route || "");
+
+      document.getElementById("summaryApp").textContent = cfg.app || "-";
+      document.getElementById("summaryRoute").textContent = route;
+      document.getElementById("summaryMode").innerHTML = modePill(cfg.mode || "manual");
+      document.getElementById("summaryRelease").textContent = cfg.activeRelease || "-";
+
+      document.getElementById("cfgApp").value = cfg.app || "";
+      document.getElementById("cfgEnabled").checked = cfg.enabled !== false;
+      document.getElementById("cfgRoute").value = cfg.route || "";
+      document.getElementById("cfgMode").value = cfg.mode || "manual";
+      document.getElementById("cfgSourceType").value = (cfg.providerConfig && cfg.providerConfig.sourceType) || "release_asset";
+      document.getElementById("cfgOwner").value = (cfg.providerConfig && cfg.providerConfig.owner) || "";
+      document.getElementById("cfgRepo").value = (cfg.providerConfig && cfg.providerConfig.repo) || "";
+      document.getElementById("cfgArtifactName").value = (cfg.providerConfig && cfg.providerConfig.artifactName) || "";
+      document.getElementById("cfgBaseUrl").value = (cfg.providerConfig && cfg.providerConfig.baseUrl) || "";
+
+      document.getElementById("cfgAuthType").value = (state.appDetails.secretSettings && state.appDetails.secretSettings.authType) || "bearer";
+      document.getElementById("cfgAuthHeaderName").value = (state.appDetails.secretSettings && state.appDetails.secretSettings.authHeaderName) || "Authorization";
+      document.getElementById("cfgToken").value = "";
+      document.getElementById("cfgWebhookSecret").value = "";
+
+      document.getElementById("cfgMaxZip").value = (cfg.security && cfg.security.maxZipBytes) || 262144000;
+      document.getElementById("cfgMaxFiles").value = (cfg.security && cfg.security.maxFiles) || 12000;
+      document.getElementById("cfgAllowedBranches").value = csvFromList(cfg.webhooks && cfg.webhooks.allowedBranches);
+      document.getElementById("cfgAllowedTags").value = csvFromList(cfg.webhooks && cfg.webhooks.allowedTags);
+      document.getElementById("cfgWebhookEnabled").checked = !!(cfg.webhooks && cfg.webhooks.enabled);
+      document.getElementById("cfgWebhookAutoDeploy").checked = !!(cfg.webhooks && cfg.webhooks.autoDeploy);
+
+      const providerWebhook = cfg.mode === "gitea" ? "gitea" : "github";
+      const tokenConfigured = state.appDetails.secretsConfigured && state.appDetails.secretsConfigured.token ? t("yes") : t("no");
+      const hookConfigured = state.appDetails.secretsConfigured && state.appDetails.secretsConfigured.webhookSecret ? t("yes") : t("no");
+      document.getElementById("webhookUrlLine").textContent = `${location.origin}/static-site-manager/api/webhook/${providerWebhook} (token:${tokenConfigured}, webhookSecret:${hookConfigured})`;
+
+      document.getElementById("manualApp").value = cfg.app || "";
+      document.getElementById("manualRoute").value = cfg.route || "";
+    }
+
+    async function createApp() {
+      const name = document.getElementById("newAppName").value.trim();
+      if (!name) throw new Error(t("defineAppName"));
+
+      await fetchJson("/static-site-manager/api/app", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ app: name, mode: "manual", route: "" })
+      });
+
+      state.selectedApp = name;
+      document.getElementById("newAppName").value = "";
+      await loadApps();
+      setStatus("appsStatus", t("endpointCreated", { app: name }));
+    }
+
+    async function deleteSelectedApp() {
+      if (!state.selectedApp) throw new Error(t("noEndpointSelectedError"));
+      const app = state.selectedApp;
+      if (!confirm(t("deleteConfirm", { app }))) return;
+
+      await fetchJson("/static-site-manager/api/app", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ app })
+      });
+
+      state.selectedApp = "";
+      state.appDetails = null;
+      await loadApps();
+      setStatus("appsStatus", t("endpointDeleted", { app }));
+    }
+
+    async function saveConfig() {
+      if (!state.selectedApp) throw new Error(t("selectApp"));
+
+      const payload = {
+        app: state.selectedApp,
+        enabled: document.getElementById("cfgEnabled").checked,
+        route: document.getElementById("cfgRoute").value.trim(),
+        mode: document.getElementById("cfgMode").value,
+        providerConfig: {
+          provider: document.getElementById("cfgMode").value,
+          sourceType: document.getElementById("cfgSourceType").value,
+          owner: document.getElementById("cfgOwner").value.trim(),
+          repo: document.getElementById("cfgRepo").value.trim(),
+          artifactName: document.getElementById("cfgArtifactName").value.trim(),
+          baseUrl: document.getElementById("cfgBaseUrl").value.trim()
+        },
+        webhooks: {
+          enabled: document.getElementById("cfgWebhookEnabled").checked,
+          autoDeploy: document.getElementById("cfgWebhookAutoDeploy").checked,
+          allowedBranches: listFromCsv(document.getElementById("cfgAllowedBranches").value),
+          allowedTags: listFromCsv(document.getElementById("cfgAllowedTags").value)
+        },
+        security: {
+          maxZipBytes: Number(document.getElementById("cfgMaxZip").value || 0),
+          maxFiles: Number(document.getElementById("cfgMaxFiles").value || 0)
+        },
+        secrets: {
+          authType: document.getElementById("cfgAuthType").value,
+          authHeaderName: document.getElementById("cfgAuthHeaderName").value.trim() || "Authorization"
+        }
+      };
+
+      const token = document.getElementById("cfgToken").value;
+      if (token) payload.secrets.token = token;
+
+      const webhookSecret = document.getElementById("cfgWebhookSecret").value;
+      if (webhookSecret) payload.secrets.webhookSecret = webhookSecret;
+
+      await fetchJson("/static-site-manager/api/app", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      await loadApps();
+      setStatus("configStatus", t("configSaved"));
+    }
+
+    async function testConnection() {
+      if (!state.selectedApp) throw new Error(t("selectApp"));
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/test-connection`, {
+        method: "POST"
+      });
+      setStatus("configStatus", t("connectionOk", { repo: data.result.repository || "" }));
+    }
+
+    async function loadRemoteVersions() {
+      if (!state.selectedApp) return;
+      try {
+        const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/versions`);
+        state.remoteVersions = data.versions || [];
+      } catch (err) {
+        state.remoteVersions = [];
+      }
+      fillSelect(
+        document.getElementById("remoteVersionSelect"),
+        state.remoteVersions,
+        (x) => `${x.version} | ${x.assetName || ""} | ${x.createdAt || ""}`,
+        (x) => x.id
+      );
+    }
+
+    async function loadReleases() {
+      if (!state.selectedApp) return;
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/releases`);
+      const releases = data.releases || [];
+
+      const rows = document.getElementById("releaseRows");
+      rows.innerHTML = "";
+      for (const r of releases) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono">${r.version}</td>
+          <td>${r.status}</td>
+          <td>${r.provider}</td>
+          <td>${r.sourceVersion || "-"}</td>
+          <td>${r.tag || "-"} / ${r.branch || "-"}</td>
+          <td>${r.deployedAt || "-"}</td>
+        `;
+        rows.appendChild(tr);
+      }
+      if (!releases.length) {
+        rows.innerHTML = `<tr><td colspan="6" class="muted">${t("noReleases")}</td></tr>`;
+      }
+
+      fillSelect(
+        document.getElementById("rollbackVersionSelect"),
+        releases,
+        (x) => `${x.version} | ${x.provider} | ${x.deployedAt || ""}`,
+        (x) => x.version
+      );
+
+      await loadRemoteVersions();
+    }
+
+    async function checkUpdate() {
+      if (!state.selectedApp) throw new Error(t("selectApp"));
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/check-update`, { method: "POST" });
+      const r = data.result || {};
+      const msg = t("latestSummary", { latest: r.latest ? r.latest.version : "-", needsUpdate: r.needsUpdate });
+      setStatus("summaryStatus", msg);
+      setStatus("releaseStatus", msg);
+    }
+
+    async function deployLatest() {
+      if (!state.selectedApp) throw new Error(t("selectApp"));
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/deploy-latest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: "Deploy latest desde panel" })
+      });
+      const msg = t("deployLatestOk", { version: data.deployment.version });
+      setStatus("summaryStatus", msg);
+      setStatus("releaseStatus", msg);
+      await loadApps();
+    }
+
+    async function deploySpecific() {
+      if (!state.selectedApp) throw new Error(t("selectApp"));
+      const version = document.getElementById("remoteVersionSelect").value;
+      if (!version) throw new Error(t("selectRemoteVersion"));
+
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/deploy-version`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version, notes: `Deploy specific ${version}` })
+      });
+
+      setStatus("releaseStatus", t("deployVersionOk", { version: data.deployment.version }));
+      await loadApps();
+    }
+
+    async function rollbackVersion() {
+      if (!state.selectedApp) throw new Error(t("selectApp"));
+      const version = document.getElementById("rollbackVersionSelect").value;
+      if (!version) throw new Error(t("selectRollbackVersion"));
+      if (!confirm(t("rollbackConfirm", { version }))) return;
+
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/rollback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version })
+      });
+
+      setStatus("releaseStatus", t("rollbackOk", { version: data.result.activeRelease }));
+      await loadApps();
+    }
+
+    async function loadLogs() {
+      if (!state.selectedApp) return;
+      const data = await fetchJson(`/static-site-manager/api/app/${encodeURIComponent(state.selectedApp)}/logs?limit=80`);
+      const logs = data.logs || [];
+      const wrap = document.getElementById("logsContainer");
+      wrap.innerHTML = "";
+
+      for (const log of logs) {
+        const div = document.createElement("div");
+        div.className = "log";
+        const meta = log.meta ? JSON.stringify(log.meta) : "";
+        div.innerHTML = `<div><strong>[${log.level}]</strong> ${log.message}</div><div class="muted mono">${log.at} ${meta}</div>`;
+        wrap.appendChild(div);
+      }
+
+      if (!logs.length) {
+        wrap.innerHTML = `<div class="muted">${t("noLogs")}</div>`;
+      }
+    }
+
+    async function manualDeploy() {
+      const app = document.getElementById("manualApp").value.trim();
+      const route = document.getElementById("manualRoute").value.trim();
+      const files = Array.from(document.getElementById("manualFiles").files || []);
+      if (!app) throw new Error(t("defineApp"));
+      if (!route) throw new Error(t("defineRoute"));
+      if (!files.length) throw new Error(t("selectDistFiles"));
+
+      setStatus("manualStatus", t("prepareUpload"));
+      await fetchJson("/static-site-manager/api/prepare-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ app, clear: true })
+      });
+
+      for (let i = 0; i < files.length; i += 1) {
+        const file = files[i];
+        const rel = file.webkitRelativePath || file.name;
+        setStatus("manualStatus", t("uploading", { current: i + 1, total: files.length, file: rel }));
+        const arr = await file.arrayBuffer();
+        await fetchJson(`/static-site-manager/api/upload-file?app=${encodeURIComponent(app)}&filePath=${encodeURIComponent(rel)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/octet-stream" },
+          body: arr
+        });
+      }
+
+      const deployed = await fetchJson("/static-site-manager/api/set-route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ app, route })
+      });
+
+      state.selectedApp = app;
+      await loadApps();
+      setStatus("manualStatus", t("manualDeployOk", { version: deployed.deployment.version }));
+    }
+
+    document.getElementById("languageSelect").addEventListener("change", async (ev) => {
+      state.language = ev.target.value === "en" ? "en" : "es";
+      saveBrowserLanguage(state.language);
+      applyI18n();
+      renderSelectedApp();
+      renderEndpointList();
+      try { await saveUiSettings(); } catch (err) { setStatus("appsStatus", err.message, true); }
+    });
+
+    document.getElementById("workspaceTabs").addEventListener("click", (ev) => {
+      const btn = ev.target.closest(".tab-btn");
+      if (!btn) return;
+      switchSection(btn.dataset.tab);
+    });
+
+    document.getElementById("createAppBtn").addEventListener("click", async () => {
+      try { await createApp(); } catch (err) { setStatus("appsStatus", err.message, true); }
+    });
+
+    document.getElementById("refreshAppsBtn").addEventListener("click", async () => {
+      try { await loadApps(); setStatus("appsStatus", t("endpointsUpdated")); } catch (err) { setStatus("appsStatus", err.message, true); }
+    });
+
+    document.getElementById("refreshSelectedBtn").addEventListener("click", async () => {
+      try {
+        if (!state.selectedApp) throw new Error(t("noEndpointSelectedError"));
+        await loadSelectedApp();
+        setStatus("summaryStatus", t("endpointReloaded"));
+      } catch (err) {
+        setStatus("summaryStatus", err.message, true);
+      }
+    });
+
+    document.getElementById("deleteSelectedBtn").addEventListener("click", async () => {
+      try { await deleteSelectedApp(); } catch (err) { setStatus("appsStatus", err.message, true); }
+    });
+
+    document.getElementById("saveConfigBtn").addEventListener("click", async () => {
+      try { await saveConfig(); } catch (err) { setStatus("configStatus", err.message, true); }
+    });
+
+    document.getElementById("testConnectionBtn").addEventListener("click", async () => {
+      try { await testConnection(); } catch (err) { setStatus("configStatus", err.message, true); }
+    });
+
+    document.getElementById("checkUpdateBtn").addEventListener("click", async () => {
+      try { await checkUpdate(); } catch (err) { setStatus("summaryStatus", err.message, true); }
+    });
+
+    document.getElementById("deployLatestBtn").addEventListener("click", async () => {
+      try { await deployLatest(); } catch (err) { setStatus("summaryStatus", err.message, true); }
+    });
+
+    document.getElementById("refreshReleasesBtn").addEventListener("click", async () => {
+      try { await loadReleases(); setStatus("releaseStatus", t("releasesUpdated")); } catch (err) { setStatus("releaseStatus", err.message, true); }
+    });
+
+    document.getElementById("deployVersionBtn").addEventListener("click", async () => {
+      try { await deploySpecific(); } catch (err) { setStatus("releaseStatus", err.message, true); }
+    });
+
+    document.getElementById("rollbackBtn").addEventListener("click", async () => {
+      try { await rollbackVersion(); } catch (err) { setStatus("releaseStatus", err.message, true); }
+    });
+
+    document.getElementById("refreshLogsBtn").addEventListener("click", async () => {
+      try { await loadLogs(); setStatus("summaryStatus", t("logsUpdated")); } catch (err) { setStatus("summaryStatus", err.message, true); }
+    });
+
+    document.getElementById("manualDeployBtn").addEventListener("click", async () => {
+      try { await manualDeploy(); } catch (err) { setStatus("manualStatus", err.message, true); }
+    });
+
+    (async () => {
+      try {
+        const backLink = document.getElementById("backToEditorLink");
+        if (backLink) backLink.href = resolveEditorBasePath();
+        await loadUiSettings();
+        switchSection(state.currentTab);
+        await loadApps();
+      } catch (err) {
+        setStatus("appsStatus", t("initialError", { error: err.message }), true);
+      }
+    })();
+  </script>
+</body>
+</html>

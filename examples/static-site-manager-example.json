@@ -1,0 +1,64 @@
+[
+  {
+    "id": "f1a1b8e4e892d001",
+    "type": "tab",
+    "label": "Static Site Manager Example",
+    "disabled": false,
+    "info": "Example flow for static-site-manager"
+  },
+  {
+    "id": "inject_static_site_manager",
+    "type": "inject",
+    "z": "f1a1b8e4e892d001",
+    "name": "Trigger",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "start",
+    "payloadType": "str",
+    "x": 180,
+    "y": 140,
+    "wires": [
+      [
+        "node_static_site_manager"
+      ]
+    ]
+  },
+  {
+    "id": "node_static_site_manager",
+    "type": "static-site-manager",
+    "z": "f1a1b8e4e892d001",
+    "name": "Static Site Manager",
+    "sitePath": "/var/www/example-dist",
+    "route": "/static",
+    "x": 430,
+    "y": 140,
+    "wires": [
+      [
+        "debug_static_site_manager"
+      ]
+    ]
+  },
+  {
+    "id": "debug_static_site_manager",
+    "type": "debug",
+    "z": "f1a1b8e4e892d001",
+    "name": "Debug Output",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "x": 670,
+    "y": 140,
+    "wires": []
+  }
+]
